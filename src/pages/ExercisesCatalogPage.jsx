@@ -3,6 +3,7 @@ import {Input, Button, Card, Row, Col, Select, Tag, Modal, Form, Typography} fro
 import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import ExercisesCatalogTable from "../components/ExercisesCatalogTable.jsx";
 import ImagesUploader from "../components/ImagesUploader.jsx";
+import CenterContainer from "../components/CenterContainer.jsx";
 
 const { Option } = Select;
 
@@ -58,7 +59,7 @@ export default function ExercisesCatalogPage(){
   };
 
   return (
-    <div style={{ padding: "24px", width: "80%", margin: "0 auto" }}>
+    <CenterContainer>
       {/* Заголовок и кнопка добавления */}
       <Typography.Title level={2} style={{textAlign: "center"}}>Каталог упражнений</Typography.Title>
       <Row style={{marginBottom: "16px"}}>
@@ -116,6 +117,6 @@ export default function ExercisesCatalogPage(){
           </Button>
         </Form>
       </Modal>
-    </div>
+    </CenterContainer>
   );
 };

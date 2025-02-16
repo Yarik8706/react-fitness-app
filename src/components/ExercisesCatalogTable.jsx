@@ -22,34 +22,33 @@ export default function ExercisesCatalogTable() {
     setSearchText(selectedKeys[0]);
     setSearchedColumn(dataIndex);
   };
-  
-  const handleReset = (clearFilters) => {
-    clearFilters();
-    setSearchText('');
-  };
 
   const data = [
     {
       key: '1',
-      title: 'John Brown',
+      title: 'Приседания',
       difficulty: 1,
+      equipment: ["Гантели", "Коврик"],
       tags: ["Tag 1", "Tag 2"],
     },
     {
       key: '2',
-      title: 'Jim Green',
+      title: 'Бег на месте',
       difficulty: 1,
+      equipment: ["Коврик"],
       tags: ["Tag 3"],
     },
     {
       key: '3',
-      title: 'Joe Black',
+      title: 'Прыжки',
       difficulty: 2,
+      equipment: ["Коврик", "Скакалка"],
       tags: ["Tag 1", "Tag 3"],
     },
     {
       key: '4',
-      title: 'Jim Red',
+      title: 'Приседания',
+      equipment: ["Гантели", "Коврик"],
       difficulty: 0,
       tags: ["Tag 1", "Tag 2", "Tag 3"],
     },
@@ -117,7 +116,7 @@ export default function ExercisesCatalogTable() {
       title: 'Название',
       dataIndex: 'title',
       key: 'title',
-      width: '40%',
+      width: '30%',
       ...getColumnSearchProps('title', 'Название'),
     },
     {
@@ -147,7 +146,7 @@ export default function ExercisesCatalogTable() {
       onFilter: (value, data) => {
         return data.tags.includes(value);
       },
-      width: '40%',
+      width: '20%',
       render: (_, { tags }) => (
         <>
           {tags.map((tag) => {
@@ -156,6 +155,34 @@ export default function ExercisesCatalogTable() {
             let color = colors[Math.floor(Math.random() * colors.length)];
             return (
               <Tag color={color} key={tag}>
+                {tag.toUpperCase()}
+              </Tag>
+            );
+          })}
+        </>
+      ),
+    },
+    {
+      title: 'Оборудование',
+      dataIndex: 'equipment',
+      key: 'equipment',
+      width: '20%',
+      filters: [
+        ...getUniqueStrings(joinArraysOfObject(data, "equipment")).map((tag) => {
+          return {
+            text: tag,
+            value: tag,
+          };
+        })
+      ],
+      onFilter: (value, data) => {
+        return data.equipment.includes(value);
+      },
+      render: (_, { equipment }) => (
+        <>
+          {equipment.map((tag) => {
+            return (
+              <Tag color={"grey"} key={tag}>
                 {tag.toUpperCase()}
               </Tag>
             );
