@@ -59,7 +59,7 @@ export default function ExercisesCatalogPage(){
   };
 
   return (
-    <CenterContainer>
+    <>
       {/* Заголовок и кнопка добавления */}
       <Typography.Title level={2} style={{textAlign: "center"}}>Каталог упражнений</Typography.Title>
       <Row style={{marginBottom: "16px"}}>
@@ -117,6 +117,6 @@ export default function ExercisesCatalogPage(){
           </Button>
         </Form>
       </Modal>
-    </CenterContainer>
+    </>
   );
 };

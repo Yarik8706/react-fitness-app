@@ -1,8 +1,11 @@
 ﻿import {Button, Space, Table} from "antd";
-import {DeleteOutlined, EditOutlined} from "@ant-design/icons";
+import {DeleteOutlined, EditOutlined, PlayCircleOutlined} from "@ant-design/icons";
+import {useState} from "react";
 
 
-export default function TrainingTable() {
+export default function TrainingTable({editModeState = true, 
+                                        onChangePlayMode = () => {}}) {
+  
   const data = [
     {
       key: '1',
@@ -45,12 +48,15 @@ export default function TrainingTable() {
       key: 'action',
       render: (_, record) => (
         <Space size="middle">
-          <Button type="primary" onClick={() => {}}>
+          {!editModeState && <Button type="primary" onClick={() => onChangePlayMode(true)}>
+            <PlayCircleOutlined />
+          </Button>}
+          {editModeState && <><Button type="primary" onClick={() => {}}>
             <EditOutlined />
           </Button>
           <Button type="primary" danger onClick={() => {}}>
             <DeleteOutlined />
-          </Button>
+          </Button></>}
         </Space>
       ),
     }

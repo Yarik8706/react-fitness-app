@@ -4,11 +4,14 @@ import {PlusOutlined} from "@ant-design/icons";
 import ExercisesCatalogTable from "../components/ExercisesCatalogTable.jsx";
 import TrainingTable from "../components/TrainingTable.jsx";
 import TrainingFormDrawer from "../components/TrainingFormDrawer.jsx";
+import {useState} from "react";
 
 
 export default function TrainingConstructorPage() {
+  const [drawerState, setDrawerState] = useState(true);
+  
   return (
-    <CenterContainer>
+    <>
       <Typography.Title level={2} style={{textAlign: "center"}}>Конструктор тренировок</Typography.Title>
       <Row style={{marginBottom: "16px"}}>
         <Button type="primary" icon={<PlusOutlined />}>
@@ -18,7 +21,7 @@ export default function TrainingConstructorPage() {
       <Row>
         <TrainingTable />
       </Row>
-      <Drawer open={true} placement="right" width="80%"><TrainingFormDrawer/></Drawer>
-    </CenterContainer>
+      <Drawer open={drawerState} placement="right" width="80%" onClose={() => setDrawerState(false)}><TrainingFormDrawer/></Drawer>
+    </>
   )
 } 
