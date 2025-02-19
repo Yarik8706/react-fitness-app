@@ -1,60 +1,27 @@
 ﻿import {Button, Input, Space, Table, Tag} from "antd";
 import {DeleteOutlined, EditOutlined, SearchOutlined} from '@ant-design/icons';
 import Highlighter from 'react-highlight-words';
-import {useState, useRef} from "react";
+import {useState, useRef, useEffect} from "react";
 import {getUniqueStrings, joinArraysOfObject} from "../utils.js";
+import {difficultyColors, difficultyTexts} from "../constants.js";
 
-
-const onChange = (pagination, filters, sorter, extra) => {
-  console.log('params', pagination, filters, sorter, extra);
-};
-
-const difficultyTexts = ["Легко", "Средне", "Сложно"]
-const difficultyColors = ["green", "yellow", "pink"]
-
-export default function ExercisesCatalogTable() {
+export default function ExercisesCatalogTable({ exercises, onEdit, onDelete }) {
   const [searchText, setSearchText] = useState('');
   const [searchedColumn, setSearchedColumn] = useState('');
   const searchInput = useRef(null);
+
+  useEffect(() => {
+    console.log(exercises)
+  }, []);
   
   const handleSearch = (selectedKeys, confirm, dataIndex) => {
     confirm();
     setSearchText(selectedKeys[0]);
     setSearchedColumn(dataIndex);
   };
-
-  const data = [
-    {
-      key: '1',
-      title: 'Приседания',
-      difficulty: 1,
-      equipment: ["Гантели", "Коврик"],
-      tags: ["Tag 1", "Tag 2"],
-    },
-    {
-      key: '2',
-      title: 'Бег на месте',
-      difficulty: 1,
-      equipment: ["Коврик"],
-      tags: ["Tag 3"],
-    },
-    {
-      key: '3',
-      title: 'Прыжки',
-      difficulty: 2,
-      equipment: ["Коврик", "Скакалка"],
-      tags: ["Tag 1", "Tag 3"],
-    },
-    {
-      key: '4',
-      title: 'Приседания',
-      equipment: ["Гантели", "Коврик"],
-      difficulty: 0,
-      tags: ["Tag 1", "Tag 2", "Tag 3"],
-    },
-  ];
+  
   const getColumnSearchProps = (dataIndex, title) => ({
-    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }) => (
+    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm }) => (
       <div
         style={{
           padding: 4,
@@ -126,9 +93,11 @@ export default function ExercisesCatalogTable() {
       sorter: (a, b) => a.difficulty - b.difficulty,
       sortDirections: ['descend', 'ascend'],
       render: (_, {difficulty}) => (
-        <Tag color={difficultyColors[difficulty]}>
-          {difficultyTexts[difficulty].toUpperCase()}
-        </Tag>
+        <>
+          {difficulty !== undefined && <Tag color={difficultyColors[difficulty]}>
+            {difficultyTexts[difficulty].toUpperCase()}
+          </Tag>}
+        </> 
       ),
       width: '20%',
     },
@@ -136,7 +105,7 @@ export default function ExercisesCatalogTable() {
       title: 'Теги',
       dataIndex: 'tags',
       filters: [
-        ...getUniqueStrings(joinArraysOfObject(data, "tags")).map((tag) => {
+        ...getUniqueStrings(joinArraysOfObject(exercises.length > 0 ? exercises : [], "tags")).map((tag) => {
           return {
             text: tag,
             value: tag,
@@ -147,9 +116,10 @@ export default function ExercisesCatalogTable() {
         return data.tags.includes(value);
       },
       width: '20%',
-      render: (_, { tags }) => (
+      render: (_, { tags=[] }) => (
         <>
           {tags.map((tag) => {
+            if (tag === undefined) return;
             let colors = ['magenta', 'red', 'volcano', 'orange', 'gold', 
               'yellow', 'green', 'cyan', 'blue', 'geekblue', 'purple'];
             let color = colors[Math.floor(Math.random() * colors.length)];
@@ -168,7 +138,9 @@ export default function ExercisesCatalogTable() {
       key: 'equipment',
       width: '20%',
       filters: [
-        ...getUniqueStrings(joinArraysOfObject(data, "equipment")).map((tag) => {
+        ...getUniqueStrings(joinArraysOfObject(exercises.length > 0 ? exercises : [], "equipment"))
+          .map((tag) => {
+            if (tag === undefined) return;
           return {
             text: tag,
             value: tag,
@@ -178,9 +150,10 @@ export default function ExercisesCatalogTable() {
       onFilter: (value, data) => {
         return data.equipment.includes(value);
       },
-      render: (_, { equipment }) => (
+      render: (_, { equipment=[] }) => (
         <>
           {equipment.map((tag) => {
+            if (tag === undefined) return;
             return (
               <Tag color={"grey"} key={tag}>
                 {tag.toUpperCase()}
@@ -193,12 +166,12 @@ export default function ExercisesCatalogTable() {
     {
       title: 'Действия',
       key: 'action',
-      render: (_, record) => (
+      render: (_, { id }) => (
         <Space size="middle">
-          <Button type="primary" onClick={() => {}}>
+          <Button type="primary" onClick={() => onEdit(id)}>
             <EditOutlined />
           </Button>
-          <Button type="primary" danger onClick={() => {}}>
+          <Button type="primary" danger onClick={() => onDelete(id)}>
             <DeleteOutlined />
           </Button>
         </Space>
@@ -207,6 +180,6 @@ export default function ExercisesCatalogTable() {
   ];
   
   return (
-    <Table style={{width:'100%'}} columns={columns} dataSource={data} onChange={onChange} />
+    <Table style={{width:'100%'}} columns={columns} dataSource={exercises} />
   );
 }

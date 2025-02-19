@@ -5,7 +5,7 @@ import { DeleteOutlined } from "@ant-design/icons";
 
 const { Option } = Select;
 
-export default function TrainingFormDrawer() {
+export default function TrainingForm() {
   const [workoutName, setWorkoutName] = useState(""); // Название тренировки
   const [exercises, setExercises] = useState([]); // Список упражнений
 

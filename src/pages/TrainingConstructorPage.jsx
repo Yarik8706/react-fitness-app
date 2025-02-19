@@ -1,11 +1,8 @@
-﻿import CenterContainer from "../components/CenterContainer.jsx";
-import {Button, Drawer, Row, Typography} from "antd";
+﻿import {Button, Drawer, Row, Typography} from "antd";
 import {PlusOutlined} from "@ant-design/icons";
-import ExercisesCatalogTable from "../components/ExercisesCatalogTable.jsx";
 import TrainingTable from "../components/TrainingTable.jsx";
-import TrainingFormDrawer from "../components/TrainingFormDrawer.jsx";
+import TrainingForm from "../components/TrainingForm.jsx";
 import {useState} from "react";
-
 
 export default function TrainingConstructorPage() {
   const [drawerState, setDrawerState] = useState(true);
@@ -21,7 +18,10 @@ export default function TrainingConstructorPage() {
       <Row>
         <TrainingTable />
       </Row>
-      <Drawer open={drawerState} placement="right" width="80%" onClose={() => setDrawerState(false)}><TrainingFormDrawer/></Drawer>
+      <Drawer open={drawerState} placement="right" width="80%" 
+              onClose={() => setDrawerState(false)}
+              destroyOnClose
+      ><TrainingForm/></Drawer>
     </>
   )
 } 

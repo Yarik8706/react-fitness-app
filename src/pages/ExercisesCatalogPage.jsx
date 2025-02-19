@@ -1,66 +1,44 @@
 ﻿import { useState } from "react";
-import {Input, Button, Card, Row, Col, Select, Tag, Modal, Form, Typography} from "antd";
-import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import {Button, Row, Modal, Typography} from "antd";
+import { PlusOutlined } from "@ant-design/icons";
 import ExercisesCatalogTable from "../components/ExercisesCatalogTable.jsx";
-import ImagesUploader from "../components/ImagesUploader.jsx";
-import CenterContainer from "../components/CenterContainer.jsx";
-
-const { Option } = Select;
+import ExercisesForm from "../components/ExercisesForm.jsx";
+import {useExercises} from "../contexts/ExercisesContext.jsx";
 
 export default function ExercisesCatalogPage(){
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [currentExercise, setCurrentExercise] = useState(null);
-  const [exercises, setExercises] = useState([
-    // Пример предзаполненных упражнений
-    {
-      id: 1,
-      name: "Приседания",
-      description: "Упражнение для ног и ягодиц.",
-      difficulty: "Среднее",
-      equipment: ["Гантели", "Коврик"],
-      tags: ["Ноги", "Силовая"],
-    },
-    {
-      id: 2,
-      name: "Бег на месте",
-      description: "Кардио упражнение для разминки.",
-      difficulty: "Простое",
-      equipment: [],
-      tags: ["Кардио"],
-    },
-  ]);
-
-  // Функции для работы с упражнениями
+  const {exercises, changeExercises} = useExercises();
+  
   const handleAddExercise = () => {
     setIsModalVisible(true);
     setCurrentExercise(null);
   };
 
-  const handleEditExercise = (exercise) => {
+  const handleEditExercise = (id) => {
+    const exercise = exercises.find((ex) => ex.id === id);
     setIsModalVisible(true);
     setCurrentExercise(exercise);
   };
 
   const handleDeleteExercise = (id) => {
-    setExercises(exercises.filter((ex) => ex.id !== id));
+    changeExercises(exercises.filter((ex) => ex.id !== id));
   };
 
   const handleSaveExercise = (values) => {
+    console.log(values);
     if (currentExercise) {
-      // Редактирование существующего упражнения
-      setExercises(
+      changeExercises(
         exercises.map((ex) => (ex.id === currentExercise.id ? { ...ex, ...values } : ex))
       );
     } else {
-      // Добавление нового упражнения
-      setExercises([...exercises, { id: Date.now(), ...values }]);
+      changeExercises([...exercises, { id: Date.now(), ...values }]);
     }
     setIsModalVisible(false);
   };
 
   return (
     <>
-      {/* Заголовок и кнопка добавления */}
       <Typography.Title level={2} style={{textAlign: "center"}}>Каталог упражнений</Typography.Title>
       <Row style={{marginBottom: "16px"}}>
         <Button type="primary" icon={<PlusOutlined />} onClick={handleAddExercise}>
@@ -68,7 +46,7 @@ export default function ExercisesCatalogPage(){
         </Button>
       </Row>
       <Row>
-        <ExercisesCatalogTable />
+        <ExercisesCatalogTable exercises={exercises} onEdit={handleEditExercise} onDelete={handleDeleteExercise}/>
       </Row>
       
       <Modal
@@ -76,46 +54,10 @@ export default function ExercisesCatalogPage(){
         visible={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
         footer={null}
+        destroyOnClose={true}
+        width={"80%"}
       >
-        <Form
-          initialValues={currentExercise || {}}
-          onFinish={handleSaveExercise}
-          layout="vertical"
-        >
-          <Form.Item name="name" label="Название" rules={[{ required: true }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item name="description" label="Описание">
-            <Input.TextArea />
-          </Form.Item>
-          <Form.Item name="difficulty" label="Сложность" rules={[{ required: true }]}>
-            <Select>
-              <Option value="Простое">Простое</Option>
-              <Option value="Среднее">Среднее</Option>
-              <Option value="Сложное">Сложное</Option>
-            </Select>
-          </Form.Item>
-          <Form.Item name="equipment" label="Оборудование">
-            <Select mode="tags" placeholder="Выберите оборудование">
-              <Option value="Гантели">Гантели</Option>
-              <Option value="Коврик">Коврик</Option>
-              <Option value="Скакалка">Скакалка</Option>
-            </Select>
-          </Form.Item>
-          <Form.Item name="tags" label="Теги">
-            <Select mode="tags" placeholder="Добавьте теги">
-              <Option value="Ноги">Ноги</Option>
-              <Option value="Кардио">Кардио</Option>
-              <Option value="Силовая">Силовая</Option>
-            </Select>
-          </Form.Item>
-          <Form.Item name="images" label="Изображения">
-            <ImagesUploader onImagesUpload={(base64) => console.log("Base64:", base64)} />
-          </Form.Item>
-          <Button type="primary" htmlType="submit">
-            Сохранить
-          </Button>
-        </Form>
+        <ExercisesForm currentExercise={currentExercise} onSubmit={handleSaveExercise} />
       </Modal>
     </>
   );

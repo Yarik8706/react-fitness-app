@@ -11,6 +11,7 @@
 export function joinArraysOfObject(object, key){
   const array = [];
   for (const item of object){
+    if (!item[key]) continue
     array.push(...item[key]);
   }
   return array

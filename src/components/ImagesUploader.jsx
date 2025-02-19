@@ -2,14 +2,19 @@
 import {Upload, Button, Image, message, List} from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 
-export default function ImagesUploader({ onImagesUpload }) {
+export default function ImagesUploader({ value, onChange }) {
   const [imageSrcList, setImageSrcList] = useState([]);
 
-  // Обработка выбора файлов
+  useEffect(() => {
+    if (value) {
+      setImageSrcList(value);
+    }
+  }, []);
+  
   const handleFileChange = useCallback(
     (info) => {
       const { fileList } = info;
-      const newImageSrcList = [];
+      const newImageSrcList = value || [];
 
       fileList.forEach((file) => {
         if (file.status === "done") {
@@ -21,7 +26,7 @@ export default function ImagesUploader({ onImagesUpload }) {
             // Если все файлы обработаны, обновляем состояние и вызываем callback
             if (newImageSrcList.length === fileList.length) {
               setImageSrcList(newImageSrcList);
-              onImagesUpload(newImageSrcList); // Передаем массив base64 в функцию
+              onChange(newImageSrcList); // Передаем массив base64 в функцию
               message.success(`${fileList.length} изображений успешно загружено`);
             }
           };
@@ -31,14 +36,13 @@ export default function ImagesUploader({ onImagesUpload }) {
         }
       });
     },
-    [onImagesUpload]
+    [onChange, value]
   );
-
-  // Обработка вставки через Ctrl+V
+  
   const handlePaste = useCallback(
     (event) => {
       const items = (event.clipboardData || event.originalEvent.clipboardData).items;
-      const newImageSrcList = [];
+      const newImageSrcList = value || [];
 
       Array.from(items).forEach((item) => {
         if (item.type.startsWith("image/")) {
@@ -50,17 +54,16 @@ export default function ImagesUploader({ onImagesUpload }) {
 
             // Обновляем состояние и вызываем callback
             setImageSrcList((prev) => [...prev, base64]);
-            onImagesUpload([...imageSrcList, base64]); // Передаем массив base64 в функцию
+            onChange([...imageSrcList, base64]); // Передаем массив base64 в функцию
             message.success("Изображение вставлено из буфера обмена");
           };
           reader.readAsDataURL(blob);
         }
       });
     },
-    [onImagesUpload, imageSrcList]
+    [value, onChange, imageSrcList]
   );
-
-  // Добавляем обработчик события paste
+  
   useEffect(() => {
     window.addEventListener("paste", handlePaste);
     return () => {
@@ -69,7 +72,7 @@ export default function ImagesUploader({ onImagesUpload }) {
   }, [handlePaste]);
 
   return (
-    <div style={{ maxWidth: "500px", margin: "0 auto" }}>
+    <div style={{ maxWidth: "500px"}}>
       {/* Компонент Upload из antd с поддержкой множественной загрузки */}
       <Upload
         accept="image/*"
@@ -82,8 +85,7 @@ export default function ImagesUploader({ onImagesUpload }) {
       >
         <Button icon={<UploadOutlined />}>Выберите изображения</Button>
       </Upload>
-
-      {/* Список загруженных изображений */}
+      
       {imageSrcList.length > 0 && (
         <div style={{ marginTop: "16px" }}>
           <List
