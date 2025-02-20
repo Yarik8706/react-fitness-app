@@ -5,10 +5,11 @@ import {useState, useRef, useEffect} from "react";
 import {getUniqueStrings, joinArraysOfObject} from "../utils.js";
 import {difficultyColors, difficultyTexts} from "../constants.js";
 
-export default function ExercisesCatalogTable({ exercises, onEdit, onDelete }) {
+export default function ExercisesCatalogTable({ exercises, onEdit, onDelete, onOpen }) {
   const [searchText, setSearchText] = useState('');
   const [searchedColumn, setSearchedColumn] = useState('');
   const searchInput = useRef(null);
+  
 
   useEffect(() => {
     console.log(exercises)
@@ -124,7 +125,7 @@ export default function ExercisesCatalogTable({ exercises, onEdit, onDelete }) {
               'yellow', 'green', 'cyan', 'blue', 'geekblue', 'purple'];
             let color = colors[Math.floor(Math.random() * colors.length)];
             return (
-              <Tag color={color} key={tag}>
+              <Tag color={color} key={tag} style={{margin: "1px 2px"}}>
                 {tag.toUpperCase()}
               </Tag>
             );
@@ -155,7 +156,7 @@ export default function ExercisesCatalogTable({ exercises, onEdit, onDelete }) {
           {equipment.map((tag) => {
             if (tag === undefined) return;
             return (
-              <Tag color={"grey"} key={tag}>
+              <Tag color={"grey"} key={tag} style={{margin: "1px 2px"}}>
                 {tag.toUpperCase()}
               </Tag>
             );
@@ -166,8 +167,12 @@ export default function ExercisesCatalogTable({ exercises, onEdit, onDelete }) {
     {
       title: 'Действия',
       key: 'action',
+      width: "30%",
       render: (_, { id }) => (
         <Space size="middle">
+          <Button type="primary" onClick={() => onOpen(id)}>
+            <SearchOutlined />
+          </Button>
           <Button type="primary" onClick={() => onEdit(id)}>
             <EditOutlined />
           </Button>

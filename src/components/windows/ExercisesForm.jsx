@@ -1,9 +1,20 @@
 ﻿import {Button, Form, Input, Select} from "antd";
-import ImagesUploader from "./ImagesUploader.jsx";
-import VideoUploader from "./VideoUploader.jsx";
+import ImagesUploader from "../ImagesUploader.jsx";
+import VideoUploader from "../VideoUploader.jsx";
 
+const { Option } = Select; 
 
-export default function ExercisesForm({ onSubmit, currentExercise={} }) {
+export default function ExercisesForm({ onSubmit, currentExercise={
+  title: "",
+  description: "",
+  difficulty: null,
+  equipment: [],
+  tags: [],
+  images: [],
+  video: null
+} }) {
+  
+  
   return (
     <Form
       initialValues={currentExercise || {}}

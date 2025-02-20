@@ -1,11 +1,11 @@
 import './App.css'
-import PagesNav from "./components/PagesNav.jsx";
+import PagesNav from "./components/layout/PagesNav.jsx";
 import ExercisesCatalogPage from "./pages/ExercisesCatalogPage.jsx";
 import {BrowserRouter, Route, Routes} from "react-router-dom";
 import AvatarPage from "./pages/AvatarPage.jsx"; 
 import StartTrainingPage from "./pages/StartTrainingPage.jsx";
 import TrainingConstructorPage from "./pages/TrainingConstructorPage.jsx";
-import CenterContainer from "./components/CenterContainer.jsx";
+import CenterContainer from "./components/layout/CenterContainer.jsx";
 import {ExercisesContextProvider} from "./contexts/ExercisesContext.jsx";
 
 function App() {

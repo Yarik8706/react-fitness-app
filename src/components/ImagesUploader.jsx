@@ -1,6 +1,7 @@
 ﻿import React, { useState, useCallback, useEffect } from "react";
 import {Upload, Button, Image, message, List} from "antd";
 import { UploadOutlined } from "@ant-design/icons";
+import ImagesPreview from "./ImagesPreview.jsx";
 
 export default function ImagesUploader({ value, onChange }) {
   const [imageSrcList, setImageSrcList] = useState([]);
@@ -9,12 +10,12 @@ export default function ImagesUploader({ value, onChange }) {
     if (value) {
       setImageSrcList(value);
     }
-  }, []);
-  
+  }, [value]);
+
   const handleFileChange = useCallback(
     (info) => {
       const { fileList } = info;
-      const newImageSrcList = value || [];
+      const newImageSrcList = [...imageSrcList];
 
       fileList.forEach((file) => {
         if (file.status === "done") {
@@ -24,7 +25,7 @@ export default function ImagesUploader({ value, onChange }) {
             newImageSrcList.push(base64);
 
             // Если все файлы обработаны, обновляем состояние и вызываем callback
-            if (newImageSrcList.length === fileList.length) {
+            if (newImageSrcList.length === imageSrcList.length + fileList.length) {
               setImageSrcList(newImageSrcList);
               onChange(newImageSrcList); // Передаем массив base64 в функцию
               message.success(`${fileList.length} изображений успешно загружено`);
@@ -36,13 +37,13 @@ export default function ImagesUploader({ value, onChange }) {
         }
       });
     },
-    [onChange, value]
+    [onChange, imageSrcList]
   );
-  
+
   const handlePaste = useCallback(
     (event) => {
       const items = (event.clipboardData || event.originalEvent.clipboardData).items;
-      const newImageSrcList = value || [];
+      const newImageSrcList = [...imageSrcList];
 
       Array.from(items).forEach((item) => {
         if (item.type.startsWith("image/")) {
@@ -53,17 +54,37 @@ export default function ImagesUploader({ value, onChange }) {
             newImageSrcList.push(base64);
 
             // Обновляем состояние и вызываем callback
-            setImageSrcList((prev) => [...prev, base64]);
-            onChange([...imageSrcList, base64]); // Передаем массив base64 в функцию
+            setImageSrcList(newImageSrcList);
+            onChange(newImageSrcList); // Передаем массив base64 в функцию
             message.success("Изображение вставлено из буфера обмена");
           };
           reader.readAsDataURL(blob);
         }
       });
     },
-    [value, onChange, imageSrcList]
+    [onChange, imageSrcList]
   );
-  
+
+  const handleRemoveImage = useCallback(
+    (index) => {
+      const newImageSrcList = imageSrcList.filter((_, i) => i !== index);
+      setImageSrcList(newImageSrcList);
+      onChange(newImageSrcList);
+    },
+    [imageSrcList, onChange]
+  );
+
+  const handleMoveImage = useCallback(
+    (fromIndex, toIndex) => {
+      const newImageSrcList = [...imageSrcList];
+      const [removed] = newImageSrcList.splice(fromIndex, 1);
+      newImageSrcList.splice(toIndex, 0, removed);
+      setImageSrcList(newImageSrcList);
+      onChange(newImageSrcList);
+    },
+    [imageSrcList, onChange]
+  );
+
   useEffect(() => {
     window.addEventListener("paste", handlePaste);
     return () => {
@@ -72,7 +93,7 @@ export default function ImagesUploader({ value, onChange }) {
   }, [handlePaste]);
 
   return (
-    <div style={{ maxWidth: "500px"}}>
+    <div style={{ maxWidth: "500px" }}>
       {/* Компонент Upload из antd с поддержкой множественной загрузки */}
       <Upload
         accept="image/*"
@@ -85,19 +106,12 @@ export default function ImagesUploader({ value, onChange }) {
       >
         <Button icon={<UploadOutlined />}>Выберите изображения</Button>
       </Upload>
-      
-      {imageSrcList.length > 0 && (
-        <div style={{ marginTop: "16px" }}>
-          <List
-            dataSource={imageSrcList}
-            renderItem={(src, index) => (
-              <List.Item key={index}>
-                <Image src={src} alt={`Preview ${index}`} style={{ maxWidth: "100%", height: "auto" }} />
-              </List.Item>
-            )}
-          />
-        </div>
-      )}
+
+      <ImagesPreview
+        images={imageSrcList}
+        onRemoveImage={handleRemoveImage}
+        onMoveImage={handleMoveImage}
+      />
     </div>
   );
 }

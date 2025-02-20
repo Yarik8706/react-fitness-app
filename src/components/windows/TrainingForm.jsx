@@ -1,40 +1,58 @@
-﻿import React, { useState } from "react";
+﻿import React, {useEffect, useRef, useState} from "react";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { Input, Button, Select, Card, Row, Col, Form } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
+import {useExercises} from "../../contexts/ExercisesContext.jsx";
 
 const { Option } = Select;
 
 export default function TrainingForm() {
+  const { allUniqueTags, allUniqueEquipment, exercises} = useExercises();
   const [workoutName, setWorkoutName] = useState(""); // Название тренировки
-  const [exercises, setExercises] = useState([]); // Список упражнений
-
-  // Опции для выбора упражнений
-  const exerciseOptions = ["Приседания", "Отжимания", "Бег", "Планка"];
-
-  // Опции для выбора режима упражнения
+  const [trainingExercises, setTrainingExercises] = useState([]); // Список упражнений
+  
   const modeOptions = ["Время", "Цель", "Количество повторов"];
+  console.log("trainingExercises", trainingExercises)
+  function selectExerciseUsingTags(id, tags) {
+    const currentExercises = exercises.filter((ex) => {
+      console.log(tags)
+      let exTags = [...ex.tags, ...ex.equipment];
+      console.log(exTags)
+      return tags.every((tag) => {
+        console.log(tag)
+        return exTags.includes(tag)});
+    });
+    console.log(currentExercises)
+
+    if (currentExercises.length > 0) {
+      const exercise = currentExercises[0];
+      const exerciseId = exercise.id;
+      console.log("dgsgfgs", exercise)
+      updateExercise(id, "exerciseId", exerciseId);
+    }
+  }
+    
 
   // Добавление нового упражнения
   const addExercise = () => {
     const newExercise = {
-      id: `exercise-${exercises.length + 1}`,
-      exercise: "",
+      id: `exercise-${trainingExercises.length + 1}`,
+      exerciseId: "",
       mode: "",
       value: "",
     };
-    setExercises([...exercises, newExercise]);
+    setTrainingExercises([...trainingExercises, newExercise]);
   };
 
   // Удаление упражнения
   const deleteExercise = (id) => {
-    setExercises(exercises.filter((ex) => ex.id !== id));
+    setTrainingExercises(trainingExercises.filter((ex) => ex.id !== id));
   };
 
   // Обновление данных упражнения
   const updateExercise = (id, field, value) => {
-    setExercises(
-      exercises.map((ex) =>
+    setTrainingExercises(
+      trainingExercises.map((ex) =>
         ex.id === id ? { ...ex, [field]: value } : ex
       )
     );
@@ -44,16 +62,16 @@ export default function TrainingForm() {
   const onDragEnd = (result) => {
     if (!result.destination) return;
 
-    const items = Array.from(exercises);
+    const items = Array.from(trainingExercises);
     const [reorderedItem] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, reorderedItem);
 
-    setExercises(items);
+    setTrainingExercises(items);
   };
 
   // Сохранение тренировки
   const saveWorkout = () => {
-    console.log("Тренировка сохранена:", { workoutName, exercises });
+    console.log("Тренировка сохранена:", { workoutName, exercises: trainingExercises });
   };
 
   return (
@@ -76,7 +94,7 @@ export default function TrainingForm() {
         <Droppable droppableId="exercises">
           {(provided) => (
             <div {...provided.droppableProps} ref={provided.innerRef}>
-              {exercises.map((ex, index) => (
+              {trainingExercises.map((ex, index) => (
                 <Draggable key={ex.id} draggableId={ex.id} index={index}>
                   {(provided) => (
                     <div
@@ -96,23 +114,58 @@ export default function TrainingForm() {
                         }
                       >
                         <Form layout="vertical">
-                          <Row gutter={16}>
+                          <Row gutter={8}>
                             {/* Выбор упражнения */}
-                            <Col span={8}>
+                            <Col span={6}>
                               <Form.Item label="Упражнение">
                                 <Select
-                                  placeholder="Выберите упражнение"
-                                  value={ex.exercise}
+                                  showSearch
+                                  value={exercises.find((e) => e.id === ex.exerciseId)?.title}
                                   onChange={(value) =>
-                                    updateExercise(ex.id, "exercise", value)
+                                    updateExercise(ex.id, "exerciseId", value)
                                   }
-                                >
-                                  {exerciseOptions.map((option) => (
-                                    <Option key={option} value={option}>
-                                      {option}
-                                    </Option>
-                                  ))}
-                                </Select>
+                                  placeholder="Выберите упражнение"
+                                  optionFilterProp="label"
+                                  filterSort={(optionA, optionB) =>
+                                    (optionA?.label ?? '').toLowerCase().localeCompare((optionB?.label ?? '').toLowerCase())
+                                  }
+                                  options={
+                                    exercises.map(({title, id}) => ({
+                                      value: id,
+                                      label: title,
+                                    }))
+                                  }
+                                />
+                              </Form.Item>
+                            </Col>
+                            <Col span={6}>
+                              <Form.Item
+                                label={<span>Теги для автовыбора упражнения</span>}
+                              >
+                                <Select
+                                  mode="tags"
+                                  placeholder="Выберите теги"
+                                  value={ex.tags}
+                                  onChange={(value) => selectExerciseUsingTags(ex.id, value)}
+                                  options={[
+                                    {
+                                      label: <span>Теги</span>,
+                                      title: "Теги",
+                                      options: allUniqueTags.map((tag) => ({
+                                        value: tag,
+                                        label: tag,
+                                      })),
+                                    },
+                                    {
+                                      label: <span>Оборудование</span>,
+                                      title: "Оборудование",
+                                      options: allUniqueEquipment.map((equipment) => ({
+                                        value: equipment,
+                                        label: equipment,
+                                      })),
+                                    }
+                                  ]}
+                                />
                               </Form.Item>
                             </Col>
 

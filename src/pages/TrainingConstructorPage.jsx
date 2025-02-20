@@ -1,7 +1,7 @@
 ﻿import {Button, Drawer, Row, Typography} from "antd";
 import {PlusOutlined} from "@ant-design/icons";
 import TrainingTable from "../components/TrainingTable.jsx";
-import TrainingForm from "../components/TrainingForm.jsx";
+import TrainingForm from "../components/windows/TrainingForm.jsx";
 import {useState} from "react";
 
 export default function TrainingConstructorPage() {
