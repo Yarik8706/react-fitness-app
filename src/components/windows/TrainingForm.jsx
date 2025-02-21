@@ -111,6 +111,12 @@ export default function TrainingForm({ trainingFormState, setTrainingFormState, 
   };
 
   const saveWorkout = () => {
+    for (const ex of trainingExercises) {
+      if (ex.exerciseId === "") {
+        setMessage("Некоторые упражнения не выбраны");
+        return;
+      }
+    }
     if (workoutName.trim() === "") {
       setMessage("Введите название тренировки");
       return;

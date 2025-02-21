@@ -16,7 +16,9 @@ export default function Video({id}) {
 
   return (<>
       {videoSrc && (
-        <div style={{position: 'relative', paddingTop: '56.25%'}}>
+        <div style={{
+          maxWidth: "500px",
+          position: 'relative', paddingTop: '26.25%'}}>
             <video
               controls
               style={{
@@ -24,7 +26,6 @@ export default function Video({id}) {
                 top: 0,
                 left: 0,
                 width: '100%',
-                height: '100%',
               }}
             >
               <source src={videoSrc} type="video/mp4"/>

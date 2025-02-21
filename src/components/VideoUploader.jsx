@@ -2,6 +2,7 @@
 import { Upload, Button } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import { handleGetVideo, saveVideoToDB, deleteVideoFromDB } from '../utils.js';
+import Video from "./Video.jsx";
 
 export default function VideoUploader ({ value, onChange }) {
   const [videoId, setVideoId] = useState(null);
@@ -10,6 +11,9 @@ export default function VideoUploader ({ value, onChange }) {
   const [isMessageSuccess, setIsMessageSuccess] = useState(true);
   
   useEffect(() => {
+    if (value && value !== "") {
+      setVideoId(value)
+    }
     const {videoUrl, videoId, isSuccess} = handleGetVideo();
     
     if (isSuccess) {
@@ -76,13 +80,8 @@ export default function VideoUploader ({ value, onChange }) {
         Видео должно быть не длиннее 1 минуты.
       </p>
 
-      {videoUrl && (
-        <div style={{ marginTop: '10px' }}>
-          <video controls style={{ width: '100%', maxWidth: '500px' }}>
-            <source src={videoUrl} type="video/mp4" />
-            Ваш браузер не поддерживает воспроизведение видео.
-          </video>
-        </div>
+      {videoId && (
+       <Video id={videoId} />
       )}
 
       {message !== '' && (
