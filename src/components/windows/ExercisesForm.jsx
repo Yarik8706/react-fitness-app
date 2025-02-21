@@ -14,7 +14,6 @@ export default function ExercisesForm({ onSubmit, currentExercise={
   video: null
 } }) {
   
-  
   return (
     <Form
       initialValues={currentExercise || {}}

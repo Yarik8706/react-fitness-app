@@ -1,8 +1,10 @@
-﻿import React from 'react';
+﻿import React, {useEffect, useState} from 'react';
 import { Modal, Tag, Row, Col, Image, Typography } from 'antd';
 import { PlayCircleOutlined } from '@ant-design/icons';
 import {difficultyColors, difficultyTexts} from "../../constants.js";
 import ImagesPreview from "../ImagesPreview.jsx";
+import {handleGetVideo} from "../../utils.js";
+import Video from "../Video.jsx";
 
 const { Title, Paragraph } = Typography;
 
@@ -10,28 +12,28 @@ export default function ExerciseInfoModal({ exercise, visible, onClose }) {
   if (!exercise) return null;
 
   const {
-    name,
+    title,
     description,
     difficulty,
     equipment = [],
     tags = [],
     images = [],
-    videoUrl,
+    video
   } = exercise;
 
   return (
     <Modal
-      title={name}
-      visible={visible}
+      title={<span style={{fontSize: "24px", fontWeight: "bold"}}>{title}</span>}
+      open={visible}
       onCancel={onClose}
       footer={null}
       width={800}
     >
       <Row gutter={[16, 16]}>
-        <Col span={24}>
+        {description && <Col span={24}>
           <Title level={5}>Описание</Title>
           <Paragraph>{description}</Paragraph>
-        </Col>
+        </Col>}
 
         <Col span={24}>
           <Title level={5}>Сложность</Title>
@@ -40,47 +42,37 @@ export default function ExerciseInfoModal({ exercise, visible, onClose }) {
           </Tag>
         </Col>
 
-        <Col span={24}>
+        {equipment.length > 0 && <Col span={24}>
           <Title level={5}>Оборудование</Title>
           <div>
-            {equipment.length > 0 && equipment.map((tag, index) => (
+            {equipment.map((tag, index) => (
               <Tag key={index} color="grey">
                 {tag}
               </Tag>
             ))}
           </div>
-        </Col>
+        </Col>}
 
-        <Col span={24}>
+        {tags.length > 0 && <Col span={24}>
           <Title level={5}>Теги</Title>
           <div>
-            {tags.length > 0 && tags.map((tag, index) => (
+            {tags.map((tag, index) => (
               <Tag key={index} color="grey">
                 {tag}
               </Tag>
             ))}
           </div>
-        </Col>
+        </Col>}
 
-        <ImagesPreview images={images} />
-
-        {videoUrl && (
+        {images.length > 0 && <Col span={24}>
+          <Title level={5}>Изображения</Title>
+          <ImagesPreview images={images} />
+        </Col>}
+        
+        {video && (
           <Col span={24}>
-            <div style={{ position: 'relative', paddingTop: '56.25%' }}>
-              <video
-                controls
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  width: '100%',
-                  height: '100%',
-                }}
-              >
-                <source src={videoUrl} type="video/mp4" />
-                Ваш браузер не поддерживает воспроизведение видео.
-              </video>
-            </div>
+            <Title level={5}>Видео</Title>
+            <Video id={video} />
           </Col>
         )}
       </Row>

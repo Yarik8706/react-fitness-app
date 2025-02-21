@@ -1,60 +1,73 @@
 ﻿import {Button, Space, Table} from "antd";
-import {DeleteOutlined, EditOutlined, PlayCircleOutlined} from "@ant-design/icons";
-import {useState} from "react";
-
+import {DeleteOutlined, EditOutlined, PlayCircleOutlined, SearchOutlined} from "@ant-design/icons";
+import {useTrainings} from "../contexts/TrainingsContext.jsx";
+import {useExercises} from "../contexts/ExercisesContext.jsx";
+import {useAppContext} from "../contexts/AppContext.jsx";
 
 export default function TrainingTable({editModeState = true, 
-                                        onChangePlayMode = () => {}}) {
+                                        onChangePlayMode = ({id, isActive}) => {}}) {
+  const {trainings, changeTrainings, setTrainingInfoModalState, setTrainingFormState} = useTrainings();
+  const {setRemoveSomethingModalState} = useExercises()
+  const {isMobile} = useAppContext();
   
-  const data = [
-    {
-      key: '1',
-      title: 'Приседания',
-      exercisesCount: 3,
-    },
-    {
-      key: '2',
-      title: 'Бег на месте',
-      exercisesCount: 2,
-    },
-    {
-      key: '3',
-      title: 'Прыжки',
-      exercisesCount: 1,
-    },
-    {
-      key: '4',
-      title: 'Приседания',
-      exercisesCount: 5,
-    },
-  ];
-
+  function deleteTraining(id) {
+    const newTrainings = trainings.filter(training => training.id !== id);
+    changeTrainings(newTrainings);
+  }
+  
+  
   const columns = [
     {
       title: 'Название',
       dataIndex: 'title',
       key: 'title',
-      width: '30%',
+      width: isMobile ? '50%' : '30%',
     },
     {
       title: 'Количество упражнений',
-      dataIndex: 'exercisesCount',
+      dataIndex: 'exercises',
       key: 'exercisesCount',
-      sorter: (a, b) => a.exercisesCount - b.exercisesCount,
+      sorter: (a, b) => a.exercises.length - b.exercises.length,
       sortDirections: ['descend', 'ascend'],
+      render: (_, {exercises}) => (
+        <>{exercises.length}</>
+      )
     },
     {
       title: 'Действия',
       key: 'action',
-      render: (_, record) => (
-        <Space size="middle">
-          {!editModeState && <Button type="primary" onClick={() => onChangePlayMode(true)}>
+      width: isMobile ? '50%' : '25%',
+      render: (index, record) => (
+        <Space size={isMobile ? "small" : "middle"}>
+          {!editModeState && <Button type="primary" onClick={
+            () => onChangePlayMode({id: record.id, isActive:true})}>
             <PlayCircleOutlined />
           </Button>}
-          {editModeState && <><Button type="primary" onClick={() => {}}>
+          <Button type="primary" onClick={
+            () => setTrainingInfoModalState({training: record, visible: true})}>
+            <SearchOutlined  />
+          </Button>
+          {editModeState && <><Button type="primary" onClick={
+            () => {setTrainingFormState(
+              {
+                training: record,
+                visible: true,
+                isEdit: true
+              })
+            }
+          }>
             <EditOutlined />
           </Button>
-          <Button type="primary" danger onClick={() => {}}>
+          <Button type="primary" danger onClick={() => {
+            setRemoveSomethingModalState({
+              visible: true,
+              text: "Вы действительно хотите удалить тренировку?",
+              onAction: (s) => {
+                setRemoveSomethingModalState({visible: false, title: "", onAction: () => {}});
+                if (s) deleteTraining(record.id)
+              }
+            })
+          }}>
             <DeleteOutlined />
           </Button></>}
         </Space>
@@ -62,7 +75,11 @@ export default function TrainingTable({editModeState = true,
     }
   ];
   
+  if (isMobile) {
+    columns.splice(1, 1)
+  }
+  
   return (
-    <Table columns={columns} dataSource={data} />
+    <Table columns={columns} dataSource={trainings} style={{width:'100%'}}/>
   )
 } 

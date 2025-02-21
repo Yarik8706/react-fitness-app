@@ -1,5 +1,5 @@
 ﻿import React, { useState, useCallback, useEffect } from "react";
-import {Upload, Button, Image, message, List} from "antd";
+import {Upload, Button, message} from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import ImagesPreview from "./ImagesPreview.jsx";
 

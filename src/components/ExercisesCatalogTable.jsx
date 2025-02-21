@@ -1,19 +1,16 @@
 ﻿import {Button, Input, Space, Table, Tag} from "antd";
 import {DeleteOutlined, EditOutlined, SearchOutlined} from '@ant-design/icons';
 import Highlighter from 'react-highlight-words';
-import {useState, useRef, useEffect} from "react";
+import {useState, useRef} from "react";
 import {getUniqueStrings, joinArraysOfObject} from "../utils.js";
 import {difficultyColors, difficultyTexts} from "../constants.js";
+import {useAppContext} from "../contexts/AppContext.jsx";
 
 export default function ExercisesCatalogTable({ exercises, onEdit, onDelete, onOpen }) {
   const [searchText, setSearchText] = useState('');
   const [searchedColumn, setSearchedColumn] = useState('');
   const searchInput = useRef(null);
-  
-
-  useEffect(() => {
-    console.log(exercises)
-  }, []);
+  const {isMobile} = useAppContext();
   
   const handleSearch = (selectedKeys, confirm, dataIndex) => {
     confirm();
@@ -31,7 +28,7 @@ export default function ExercisesCatalogTable({ exercises, onEdit, onDelete, onO
       >
         <Input
           ref={searchInput}
-          placeholder={`Search ${title}`}
+          placeholder={`Поиск ${title}`}
           value={selectedKeys[0]}
           onChange={(e) => {
             setSelectedKeys(e.target.value ? [e.target.value] : [])
@@ -84,7 +81,7 @@ export default function ExercisesCatalogTable({ exercises, onEdit, onDelete, onO
       title: 'Название',
       dataIndex: 'title',
       key: 'title',
-      width: '30%',
+      width: !isMobile ? '30%' : "40%",
       ...getColumnSearchProps('title', 'Название'),
     },
     {
@@ -167,7 +164,7 @@ export default function ExercisesCatalogTable({ exercises, onEdit, onDelete, onO
     {
       title: 'Действия',
       key: 'action',
-      width: "30%",
+      width: !isMobile ? "30%" : "70%",
       render: (_, { id }) => (
         <Space size="middle">
           <Button type="primary" onClick={() => onOpen(id)}>
@@ -183,6 +180,9 @@ export default function ExercisesCatalogTable({ exercises, onEdit, onDelete, onO
       ),
     }
   ];
+  if (isMobile) {
+    columns.splice(1, 3)
+  }
   
   return (
     <Table style={{width:'100%'}} columns={columns} dataSource={exercises} />

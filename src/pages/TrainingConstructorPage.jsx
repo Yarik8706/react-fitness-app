@@ -1,27 +1,23 @@
-﻿import {Button, Drawer, Row, Typography} from "antd";
+﻿import {Button, Row, Typography} from "antd";
 import {PlusOutlined} from "@ant-design/icons";
 import TrainingTable from "../components/TrainingTable.jsx";
-import TrainingForm from "../components/windows/TrainingForm.jsx";
-import {useState} from "react";
+import {useTrainings} from "../contexts/TrainingsContext.jsx";
 
 export default function TrainingConstructorPage() {
-  const [drawerState, setDrawerState] = useState(true);
+  const {setTrainingFormState} = useTrainings();
   
   return (
     <>
       <Typography.Title level={2} style={{textAlign: "center"}}>Конструктор тренировок</Typography.Title>
       <Row style={{marginBottom: "16px"}}>
-        <Button type="primary" icon={<PlusOutlined />}>
+        <Button type="primary" icon={<PlusOutlined />} onClick={() =>
+          setTrainingFormState({visible: true, isEdit: false})}>
           Добавить тренировку
         </Button>
       </Row>
       <Row>
         <TrainingTable />
       </Row>
-      <Drawer open={drawerState} placement="right" width="80%" 
-              onClose={() => setDrawerState(false)}
-              destroyOnClose
-      ><TrainingForm/></Drawer>
     </>
   )
 } 

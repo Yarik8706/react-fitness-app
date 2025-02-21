@@ -3,7 +3,8 @@ import {getExercises, saveExercises} from "../api.js";
 import ExerciseInfoModal from "../components/windows/ExerciseInfoModal.jsx";
 import ExercisesForm from "../components/windows/ExercisesForm.jsx";
 import {Modal} from "antd";
-import {getUniqueStrings, joinArraysOfObject} from "../utils.js";
+import {deleteVideoFromDB, getUniqueStrings, joinArraysOfObject} from "../utils.js";
+import RemoveSomethingModal from "../components/windows/RemoveSomethingModal.jsx";
 
 
 const ExercisesContext = createContext({
@@ -16,6 +17,7 @@ const ExercisesContext = createContext({
   handleDeleteExercise: () => {},
   handleSaveExercise: () => {},
   handleOpenExerciseInfoModal: () => {},
+  tryDeleteExercise: () => {}
 })
 
 export function ExercisesContextProvider({children}) {
@@ -31,6 +33,8 @@ export function ExercisesContextProvider({children}) {
   })
   const [allUniqueTags, setAllUniqueTags] = useState([]);
   const [allUniqueEquipment, setAllUniqueEquipment] = useState([]);
+  const [removeSomethingModalState, setRemoveSomethingModalState] = 
+    useState({visible: false, text: "", onAction: () => {}});
   
   useEffect(() => {
     const storedExercises = getExercises();
@@ -55,9 +59,25 @@ export function ExercisesContextProvider({children}) {
     const exercise = exercises.find((ex) => ex.id === id);
     setExerciseFormState({visible: true, exercise, isEdit: true});
   };
+  
+  const tryDeleteExercise = (id) => {
+    setRemoveSomethingModalState({
+        visible: true, 
+        text: "Удалить упражнение?", 
+        onAction: (statement) => {
+          setRemoveSomethingModalState({visible: false, text: "", onAction: () => {}});
+          if (statement)handleDeleteExercise(id)
+        }
+      });
+  }
 
   const handleDeleteExercise = (id) => {
-    changeExercises(exercises.filter((ex) => ex.id !== id));
+    changeExercises(exercises.filter((ex) => {
+      if (ex.id === id && ex.video !== "") {
+        deleteVideoFromDB(ex.video)
+      }
+      return ex.id !== id
+    }));
   };
 
   function handleSaveExercise (values) {
@@ -83,15 +103,19 @@ export function ExercisesContextProvider({children}) {
   return (
     <ExercisesContext.Provider value={{
       exercises, changeExercises, setExerciseInfoModalState, 
-      handleAddExercise, handleEditExercise, handleDeleteExercise,
+      handleAddExercise, handleEditExercise, tryDeleteExercise,
       handleSaveExercise, handleOpenExerciseInfoModal,
-      allUniqueTags, allUniqueEquipment
+      allUniqueTags, allUniqueEquipment,
+      setRemoveSomethingModalState
     }}>
       {children}
-      <ExerciseInfoModal visible={exerciseInfoModalState.visible} 
-                         onClose={onCloseExerciseInfoModal} 
-                         exercise={exerciseInfoModalState.exercise}/>
+      <ExerciseInfoModal
+        className="modal-window"
+        visible={exerciseInfoModalState.visible} 
+        onClose={onCloseExerciseInfoModal} 
+        exercise={exerciseInfoModalState.exercise}/>
       <Modal
+        className="modal-window"
         title={exerciseFormState.exercise ? "Редактировать упражнение" : "Добавить упражнение"}
         open={exerciseFormState.visible}
         onCancel={() => setExerciseFormState(prevState => 
@@ -102,6 +126,11 @@ export function ExercisesContextProvider({children}) {
       >
         <ExercisesForm currentExercise={exerciseFormState.exercise} onSubmit={handleSaveExercise} />
       </Modal>
+      <RemoveSomethingModal 
+        className="modal-window"
+        visible={removeSomethingModalState.visible} 
+        text={removeSomethingModalState.text} 
+        onAction={removeSomethingModalState.onAction}/>
     </ExercisesContext.Provider>
   )
 } 

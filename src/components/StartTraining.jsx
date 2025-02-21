@@ -1,33 +1,34 @@
 ﻿import React, {useEffect, useRef, useState} from "react";
-import {Button, Card, Col, Modal, Row, Statistic} from "antd";
+import {Button, Card, Col, Modal, Row, Statistic, Tag, Typography} from "antd";
 import {BackwardOutlined, ForwardOutlined} from "@ant-design/icons";
+import {useExercises} from "../contexts/ExercisesContext.jsx";
+import PlayModeExerciseInfo from "./PlayModeExerciseInfo.jsx";
+import {useAppContext} from "../contexts/AppContext.jsx";
 
-const { Countdown } = Statistic;
-
-export default function StartTraining() {
-  const workout = {
-    title: 'My Workout',
-    exercises: [
-      { exercise: 'Bench Press', mode: 'reps', value: '3' },
-      { exercise: 'Squats', mode: 'purpose', value: 'ккккккккк' },
-      { exercise: 'Deadlift', mode: 'reps', value: '5' },
-      { exercise: 'Overhead Press', mode: 'time', value: '1:30' },
-      { exercise: 'Lunge', mode: 'reps', value: '8' },
-    ],
-  }
-
+export default function StartTraining({workout, onClose}) {
+  const {exercises} = useExercises();
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
   const [isResting, setIsResting] = useState(false);
   const [restTime, setRestTime] = useState(30); // Базовое время отдыха
   const [workoutStats, setWorkoutStats] = useState({ totalTime: 0, totalReps: 0 });
   const [isWorkoutFinished, setIsWorkoutFinished] = useState(false);
   const [timeLeft, setTimeLeft] = useState(0); // Оставшееся время для упражнения или отдыха
-  const timerRef = useRef(null); // Ref для хранения таймера
+  const timerRef = useRef(null); 
+  const {playerData, editPlayerData} = useAppContext();
 
   const currentExercise = workout.exercises[currentExerciseIndex];
-
+  const [playerScore, setPlayerScore] = useState(0);
+  
+  useEffect(() => {
+    
+    if (isWorkoutFinished) {
+      setPlayerScore(Math.round(workoutStats.totalReps * 10 * workout.exercises.length * Math.random()));
+    }
+  }, [isWorkoutFinished]);
+  
   // Запуск таймера для упражнения или отдыха
   useEffect(() => {
+    
     if (isResting) {
       // Начало отдыха
       setTimeLeft(restTime); // Устанавливаем время отдыха
@@ -41,7 +42,7 @@ export default function StartTraining() {
           return prev - 1; // Уменьшаем время на 1 секунду
         });
       }, 1000);
-    } else if (currentExercise.mode === 'time') {
+    } else if (currentExercise.mode === 'Время') {
       // Начало упражнения с таймером
       const exerciseTime = parseTime(currentExercise.value);
       setTimeLeft(exerciseTime / 1000); // Устанавливаем время упражнения в секундах
@@ -49,15 +50,14 @@ export default function StartTraining() {
         setTimeLeft(prev => {
           if (prev <= 1) {
             clearInterval(timerRef.current); // Останавливаем таймер
-            handleNextExercise(); // Переходим к следующему упражнению
+            handleNextExercise(); 
             return 0;
           }
-          return prev - 1; // Уменьшаем время на 1 секунду
+          return prev - 1; 
         });
       }, 1000);
     }
 
-    // Очистка таймера при размонтировании
     return () => {
       if (timerRef.current) {
         clearInterval(timerRef.current);
@@ -65,7 +65,6 @@ export default function StartTraining() {
     };
   }, [isResting, currentExercise, restTime]);
 
-  // Обработка завершения упражнения
   const handleNextExercise = () => {
     if (currentExerciseIndex < workout.exercises.length - 1) {
       setIsResting(true); // Начинаем отдых
@@ -76,17 +75,15 @@ export default function StartTraining() {
     }
   };
 
-  // Обработка завершения отдыха
   const handleRestEnd = () => {
     setIsResting(false);
     setCurrentExerciseIndex(prev => prev + 1);
   };
 
-  // Корректировка времени отдыха
   const adjustRestTime = (seconds) => {
     setRestTime(prev => {
       const newRestTime = prev + seconds;
-      if (newRestTime <= 10) {
+      if (newRestTime <= 0) {
         handleRestEnd(); // Автоматически завершаем отдых, если время <= 10 секунд
         return 0;
       }
@@ -94,26 +91,29 @@ export default function StartTraining() {
     });
   };
 
-  // Пропуск отдыха
   const skipRest = () => {
     handleRestEnd();
   };
+  
+  const closeResultModal = () => {
+    setIsWorkoutFinished(false);
+    editPlayerData({...playerData, score: playerScore});
+    onClose();
+  };
 
-  // Возврат к предыдущему упражнению
   const goBack = () => {
     if (currentExerciseIndex > 0) {
       setCurrentExerciseIndex(prev => prev - 1);
     }
   };
 
-  // Обновление статистики
   useEffect(() => {
-    if (currentExercise.mode === 'time') {
+    if (currentExercise.mode === 'Время') {
       setWorkoutStats(prev => ({
         ...prev,
         totalTime: prev.totalTime + parseTime(currentExercise.value),
       }));
-    } else if (currentExercise.mode === 'reps') {
+    } else if (currentExercise.mode === 'Количество повторов') {
       setWorkoutStats(prev => ({
         ...prev,
         totalReps: prev.totalReps + parseInt(currentExercise.value, 10),
@@ -128,49 +128,54 @@ export default function StartTraining() {
   };
 
   return (
-    <Card title={workout.title} style={{ width: '100%', maxWidth: '500px', margin: 'auto' }}>
+    <Card title={workout.title} style={{width: '100%', maxWidth: '500px', margin: 'auto' }}>
+      {!isResting && <PlayModeExerciseInfo exercise={
+        exercises.find((e) => e.id === workout.exercises[currentExerciseIndex].exerciseId)
+      } />}
       {isResting ? (
         <>
-          <Statistic title="Rest Time" value={timeLeft} suffix="seconds" />
-          <Button onClick={() => adjustRestTime(10)}>+10s</Button>
-          <Button onClick={() => adjustRestTime(-10)}>-10s</Button>
-          <Button onClick={skipRest} icon={<ForwardOutlined />}>Skip Rest</Button>
+          <Statistic title="Отдых" value={timeLeft} suffix="сек." />
+          <Button onClick={() => adjustRestTime(10)}>+10 сек.</Button>
+          <Button onClick={() => adjustRestTime(-10)}>-10 сек.</Button>
+          <Button onClick={skipRest} icon={<ForwardOutlined />}>Пропустить отдых</Button>
         </>
       ) : (
         <>
           <h2>{currentExercise.exercise}</h2>
-          {currentExercise.mode === 'time' ? (
-            <Statistic title="Time Left" value={timeLeft} suffix="seconds" />
-          ) : currentExercise.mode === 'reps' ? (
-            <Button onClick={handleNextExercise}>Done with Reps</Button>
+          {currentExercise.mode === 'Время' ? (
+            <Statistic title="Времени осталось" value={timeLeft} suffix="сек." />
+          ) : currentExercise.mode === 'Количество повторов' ? (
+            <Button onClick={handleNextExercise}>Выполнено</Button>
           ) : (
-            <p>{currentExercise.value}</p>
+            <p>Цель: {currentExercise.value}</p>
           )}
-          <Button onClick={handleNextExercise} icon={<ForwardOutlined />}>Skip Exercise</Button>
+          <Button onClick={handleNextExercise} icon={<ForwardOutlined />}>Пропустить упражнение</Button>
           {currentExerciseIndex > 0 && (
-            <Button onClick={goBack} icon={<BackwardOutlined />}>Go Back</Button>
+            <Button onClick={goBack} icon={<BackwardOutlined />}>Вернуться назад</Button>
           )}
         </>
       )}
 
       {/* Модальное окно с результатами тренировки */}
       <Modal
-        title="Workout Finished"
-        visible={isWorkoutFinished}
-        onOk={() => setIsWorkoutFinished(false)}
-        onCancel={() => setIsWorkoutFinished(false)}
+        title="Тренировка закончилась"
+        open={isWorkoutFinished}
+        closable={false}
         footer={[
-          <Button key="close" onClick={() => setIsWorkoutFinished(false)}>
-            Close
-          </Button>,
+          <Button type="primary" key="close" onClick={closeResultModal}>
+            Закрыть
+          </Button>
         ]}
       >
         <Row gutter={16}>
           <Col span={12}>
-            <Statistic title="Total Time (s)" value={workoutStats.totalTime / 1000} />
+            <Statistic title="Общее время (c)" value={workoutStats.totalTime / 1000} />
           </Col>
           <Col span={12}>
-            <Statistic title="Total Reps" value={workoutStats.totalReps} />
+            <Statistic title="Общее количество повторов" value={workoutStats.totalReps} />
+          </Col>
+          <Col span={12}>
+            <Typography.Text>Баллов получено: <Tag color="green">{playerScore}</Tag></Typography.Text>
           </Col>
         </Row>
       </Modal>

@@ -1,12 +1,10 @@
-﻿import { useState } from "react";
-import {Button, Row, Modal, Typography} from "antd";
+﻿import {Button, Row, Typography} from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import ExercisesCatalogTable from "../components/ExercisesCatalogTable.jsx";
-import ExercisesForm from "../components/windows/ExercisesForm.jsx";
 import {useExercises} from "../contexts/ExercisesContext.jsx";
 
 export default function ExercisesCatalogPage(){
-  const {exercises, handleAddExercise, handleEditExercise, handleDeleteExercise, handleOpenExerciseInfoModal} = useExercises();
+  const {exercises, handleAddExercise, tryDeleteExercise, handleEditExercise, handleOpenExerciseInfoModal} = useExercises();
 
   return (
     <>
@@ -20,7 +18,7 @@ export default function ExercisesCatalogPage(){
         <ExercisesCatalogTable 
           exercises={exercises} 
           onEdit={handleEditExercise} 
-          onDelete={handleDeleteExercise}
+          onDelete={tryDeleteExercise}
           onOpen={handleOpenExerciseInfoModal}
         />
       </Row>
