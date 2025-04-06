@@ -1,0 +1,34 @@
+﻿export const defaultExercises = [
+  {
+    id: 1,
+    name: "Приседания",
+    description: "Упражнение для ног и ягодиц.",
+    difficulty: 1,
+    equipment: ["Гантели", "Коврик"],
+    tags: ["Ноги", "Силовая"],
+  },
+  {
+    id: 2,
+    name: "Бег на месте",
+    description: "Кардио упражнение для разминки.",
+    difficulty: 1,
+    equipment: [],
+    tags: ["Кардио"],
+  },
+  {
+    id: 3,
+    name: "Прыжки",
+    description: "Упражнение для ног и ягодиц.",
+    difficulty: 2,
+    equipment: ["Скакалка"],
+    tags: ["Ноги", "Силовая"],
+  },
+  {
+    id: 4,
+    name: "Ходьба",
+    description: "Кардио упражнение для разминки.",
+    difficulty: 1,
+    equipment: [],
+    tags: ["Кардио"],
+  },
+]

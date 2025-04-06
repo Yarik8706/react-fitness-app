@@ -1,0 +1,121 @@
+﻿export function getUniqueStrings(array) {
+  const uniqueArray = [];
+  for (const item of array) {
+    if (!uniqueArray.includes(item)) {
+      uniqueArray.push(item);
+    }
+  }
+  return uniqueArray;
+}
+
+export function joinArraysOfObject(object, key){
+  const array = [];
+  for (const item of object){
+    if (!item[key]) continue
+    array.push(...item[key]);
+  }
+  return array
+}
+
+export const handleGetVideo = async (value) => {
+  if (value) {
+    try {
+      const videoFile = await getVideoFromDB(value);
+      const url = URL.createObjectURL(videoFile);
+      return {
+        videoUrl: url,
+        videoId: value,
+        message: "Видео успешно загружено!",
+        isSuccess: true
+      }
+    } catch (error) {
+      console.error('Ошибка при получении видео:', error);
+      return {message:'Ошибка при получении видео', isSuccess: false};
+    }
+  }
+};
+
+export const getVideoFromDB = async (id) => {
+  const db = await openDB();
+  const transaction = db.transaction('videos', 'readonly');
+  const store = transaction.objectStore('videos');
+
+  return new Promise((resolve, reject) => {
+    const request = store.get(id);
+
+    request.onsuccess = () => resolve(request.result?.file);
+    request.onerror = () => reject(request.error);
+  });
+};
+
+export const openDB = () => {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open('VideoDB', 1);
+
+    request.onupgradeneeded = (event) => {
+      const db = event.target.result;
+      if (!db.objectStoreNames.contains('videos')) {
+        db.createObjectStore('videos', { keyPath: 'id', autoIncrement: true });
+      }
+    };
+
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+};
+
+export const saveVideoToDB = async (file) => {
+  const db = await openDB();
+  const transaction = db.transaction('videos', 'readwrite');
+  const store = transaction.objectStore('videos');
+
+  return new Promise((resolve, reject) => {
+    const request = store.add({ file });
+
+    request.onsuccess = () => resolve(request.result); // Возвращает ID видео
+    request.onerror = () => reject(request.error);
+  });
+};
+
+export const deleteVideoFromDB = async (id) => {
+  const db = await openDB();
+  const transaction = db.transaction('videos', 'readwrite');
+  const store = transaction.objectStore('videos');
+
+  return new Promise((resolve, reject) => {
+    const request = store.delete(id);
+
+    request.onsuccess = () => resolve(true);
+    request.onerror = () => reject(request.error);
+  });
+};
+
+function getTrainingGoal(weight, height) {
+  const bmi = (weight / ((height / 100) ** 2)).toFixed(1);
+  
+  if (bmi < 18.5) {
+    return {
+      goal: "Набор мышечной массы",
+      description: "Ваш ИМТ ниже нормы. Рекомендуется сосредоточиться на силовых тренировках и увеличении калорийности питания.",
+      bmi: bmi,
+    };
+  } else if (bmi >= 18.5 && bmi < 24.9) {
+    return {
+      goal: "Поддержание формы",
+      description: "Ваш ИМТ в норме. Рекомендуется поддерживать баланс между кардио и силовыми тренировками.",
+      bmi: bmi,
+    };
+  } else if (bmi >= 25 && bmi < 29.9) {
+    return {
+      goal: "Снижение веса",
+      description: "Ваш ИМТ указывает на избыточный вес. Рекомендуется сосредоточиться на кардио и умеренных силовых тренировках.",
+      bmi: bmi,
+    };
+  } else {
+    return {
+      goal: "Снижение веса и улучшение здоровья",
+      description: "Ваш ИМТ указывает на ожирение. Рекомендуется начать с легких кардио и постепенно увеличивать нагрузку.",
+      bmi: bmi,
+    };
+  }
+}
